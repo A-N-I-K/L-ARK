@@ -34,6 +34,15 @@ class Test(unittest.TestCase):
         except Exception:
             self.fail()
 
+    def test_getPlayerList_1(self):
+
+        rcon = mcrcon.MCRcon("", "", 0)
+
+        try:
+            main.getPlayerList(rcon)
+        except Exception:
+            self.fail()
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
