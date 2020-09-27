@@ -43,6 +43,28 @@ class Test(unittest.TestCase):
         except Exception:
             self.fail()
 
+    def test_updatePlayerPos_1(self):
+
+        rcon = mcrcon.MCRcon("", "", 0)
+        playerList = []
+
+        try:
+            main.updatePlayerPos(rcon, playerList)
+        except Exception:
+            self.fail()
+
+    """
+    def test_updatePlayerPos_2(self):
+
+        rcon = mcrcon.MCRcon("", "", 0)
+        playerList = [0]
+
+        try:
+            main.updatePlayerPos(rcon, playerList)
+        except Exception:
+            self.fail()
+    """
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

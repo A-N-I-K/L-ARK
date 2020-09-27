@@ -36,7 +36,7 @@ def getPlayerList(rcon):
 
         for line in lines:
 
-            if (line != "" and line != " "):
+            if line != "" and line != " ":
 
                 info = line.split(",")
 
@@ -47,6 +47,43 @@ def getPlayerList(rcon):
                 playerList.append([serial, name, sid])
     except Exception as e:
         print(e)
+
+    return playerList
+
+
+def getPlayerPos(rcon, sid):
+
+    try:
+        resp = rcon.command("getplayerpos {}".format(sid))
+        playerPosList = resp.split()
+
+        playerPosX = playerPosList[0][2:]
+        playerPosY = playerPosList[1][2:]
+        playerPosZ = playerPosList[2][2:]
+
+        return [playerPosX, playerPosY, playerPosZ]
+    except Exception as e:
+        print(e)
+        return None
+
+
+def updatePlayerPos(rcon, playerList):
+
+    if len(playerList) > 0:
+
+        for i in range(len(playerList)):
+
+            playerPos = getPlayerPos(rcon, playerList[i][2])
+
+            if playerPos != None and len(playerPos) == 3:
+
+                if len(playerList[i]) == 3:
+
+                    playerList[i].append(playerPos)
+
+                else:
+
+                    playerList[i][3] = playerPos
 
     return playerList
 
@@ -64,8 +101,13 @@ def main():
     if rcon != None:
 
         playerList = getPlayerList(rcon)
+        onlinePlayerCount = len(playerList)
+
+        playerList = updatePlayerPos(rcon, playerList)
+
+        # playerPos =
         # resp = rcon.command("getplayerpos 76561198034310022")
-        print(playerList)
+        print(onlinePlayerCount, playerList)
         endCon(rcon)
 
 
