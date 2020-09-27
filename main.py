@@ -37,7 +37,7 @@ def getPlayerList(rcon):
     try:
         startCon(rcon)
         resp = rcon.command("listplayers")
-        endCon(rcon)
+        delay()
 
         lines = resp.splitlines()
 
@@ -63,7 +63,7 @@ def getPlayerPos(rcon, sid):
     try:
         startCon(rcon)
         resp = rcon.command("getplayerpos {}".format(sid))
-        endCon(rcon)
+        delay()
 
         playerPosList = resp.split()
 
@@ -77,6 +77,7 @@ def getPlayerPos(rcon, sid):
         return None
 
 
+# Can be made faster by incorporating into drawCanvas()
 def updatePlayerPos(rcon, playerList):
 
     if len(playerList) > 0:
@@ -98,38 +99,79 @@ def updatePlayerPos(rcon, playerList):
     return playerList
 
 
-def drawCanvas():
+def getAllPlayers(rcon):
 
+    playerList = getPlayerList(rcon)
+    playerList = updatePlayerPos(rcon, playerList)
+
+    print(playerList)
+
+    return playerList
+
+
+def drawCanvas(rcon):
+
+    # rcon.connect()
     pygame.init()
 
     # screen = pygame.display.set_mode([1020, 1050], pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
     screen = pygame.display.set_mode([1008, 1008])
-    tmpScreen = screen.copy()
+    # tmpScreen = screen.copy()
 
-    map = pygame.image.load("img/valguero_100x100.png")
+    bg = pygame.image.load("img/valguero_100x100.png")
 
-    screen.fill((0, 0, 0))
-    screen.blit(map, (0, 0))
-
-    # Run until the user asks to quit
     running = True
+
     while running:
 
-        # Did the user click the window close button?
+        screen.fill((0, 0, 0))
+        screen.blit(bg, (0, 0))
+
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
+
                 running = False
 
-        # Fill the background with white
+        # == FAST DRAW == #
+        playerList = getPlayerList(rcon)
+        # == FAST DRAW == #
 
-        # Draw a solid blue circle in the center
-        pygame.draw.circle(screen, (0, 0, 255), (250, 250), 75)
+        # playerList = getAllPlayers(rcon)
 
-        # Flip the display
+        for player in playerList:
+
+            # == FAST DRAW == #
+            sid = player[2]
+            playerPos = getPlayerPos(rcon, sid)
+
+            print(player[1], playerPos)
+
+            playerPosX = playerPos[0]
+            playerPosY = playerPos[1]
+            # == FAST DRAW == #
+
+            # playerPosX = player[3][0]
+            # playerPosY = player[3][1]
+
+            playerLon = int(503 + (float(playerPosX) / 816))
+            playerLat = int(496 + (float(playerPosY) / 816))
+
+            pygame.draw.circle(screen, (255, 0, 0), (playerLon, playerLat), 5)
+
+        # pygame.draw.circle(screen, (0, 0, 255), (int(503 + (float(8160) / 816)), int(496 + (float(8160) / 816))), 5)
+
         pygame.display.flip()
 
-    # Done! Time to quit.
+        # time.sleep(1)
+
+    # rcon.disconnect()
     pygame.quit()
+
+
+def delay():
+
+    time.sleep(1)
 
 
 def main():
@@ -144,18 +186,9 @@ def main():
 
     # if rcon != None:
 
-    drawCanvas()
+    drawCanvas(rcon)
 
-    while True:
-
-        playerList = getPlayerList(rcon)
-        onlinePlayerCount = len(playerList)
-
-        playerList = updatePlayerPos(rcon, playerList)
-
-        print(onlinePlayerCount, playerList)
-        time.sleep(1)
-    # endCon(rcon)
+    endCon(rcon)
 
 
 def test():
