@@ -15,9 +15,11 @@ import mcrcon
 def startCon(rcon):
 
     try:
+
         rcon.connect()
         return rcon
     except Exception as e:
+
         print(e)
         return None
 
@@ -25,8 +27,10 @@ def startCon(rcon):
 def endCon(rcon):
 
     try:
+
         rcon.disconnect()
     except Exception as e:
+
         print(e)
 
 
@@ -35,6 +39,7 @@ def getPlayerList(rcon):
     playerList = []
 
     try:
+
         startCon(rcon)
         resp = rcon.command("listplayers")
         delay()
@@ -53,6 +58,7 @@ def getPlayerList(rcon):
 
                 playerList.append([serial, name, sid])
     except Exception as e:
+
         print(e)
 
     return playerList
@@ -61,6 +67,7 @@ def getPlayerList(rcon):
 def getPlayerPos(rcon, sid):
 
     try:
+
         startCon(rcon)
         resp = rcon.command("getplayerpos {}".format(sid))
         delay()
@@ -71,8 +78,15 @@ def getPlayerPos(rcon, sid):
         playerPosY = playerPosList[1][2:]
         playerPosZ = playerPosList[2][2:]
 
-        return [playerPosX, playerPosY, playerPosZ]
+        if isFloat(playerPosX) and isFloat(playerPosY) and isFloat(playerPosZ):
+
+            return [playerPosX, playerPosY, playerPosZ]
+
+        else:
+
+            return None
     except Exception as e:
+
         print(e)
         return None
 
@@ -99,6 +113,7 @@ def updatePlayerPos(rcon, playerList):
     return playerList
 
 
+# Can be made faster by incorporating into drawCanvas()
 def getAllPlayers(rcon):
 
     playerList = getPlayerList(rcon)
@@ -111,14 +126,12 @@ def getAllPlayers(rcon):
 
 def drawCanvas(rcon):
 
-    # rcon.connect()
     pygame.init()
 
-    # screen = pygame.display.set_mode([1020, 1050], pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
     screen = pygame.display.set_mode([1008, 1008])
-    # tmpScreen = screen.copy()
-
+    pygame.display.set_caption("L'ARK")
     bg = pygame.image.load("img/valguero_100x100.png")
+    font = pygame.font.Font('freesansbold.ttf', 10)
 
     running = True
 
@@ -134,7 +147,9 @@ def drawCanvas(rcon):
                 running = False
 
         # == FAST DRAW == #
+
         playerList = getPlayerList(rcon)
+
         # == FAST DRAW == #
 
         # playerList = getAllPlayers(rcon)
@@ -142,24 +157,38 @@ def drawCanvas(rcon):
         for player in playerList:
 
             # == FAST DRAW == #
+
             sid = player[2]
             playerPos = getPlayerPos(rcon, sid)
 
-            print(player[1], playerPos)
+            if playerPos != None:
 
-            playerPosX = playerPos[0]
-            playerPosY = playerPos[1]
-            # == FAST DRAW == #
+                print(player[1], playerPos)
 
-            # playerPosX = player[3][0]
-            # playerPosY = player[3][1]
+                playerPosX = playerPos[0]
+                playerPosY = playerPos[1]
 
-            playerLon = int(503 + (float(playerPosX) / 816))
-            playerLat = int(496 + (float(playerPosY) / 816))
+                # == FAST DRAW == #
 
-            pygame.draw.circle(screen, (255, 0, 0), (playerLon, playerLat), 5)
+                # playerPosX = player[3][0]
+                # playerPosY = player[3][1]
 
-        # pygame.draw.circle(screen, (0, 0, 255), (int(503 + (float(8160) / 816)), int(496 + (float(8160) / 816))), 5)
+                playerLon = int(513 + (float(playerPosX) / 816))
+                playerLat = int(506 + (float(playerPosY) / 816))
+
+                pygame.draw.circle(screen, (255, 0, 0), (playerLon, playerLat), 5)
+
+                # == NAME == #
+
+                name = font.render(" " + player[1] + " [" + str(round(50 + (float(playerPosY) / 8160), 1)) + "," + str(round(50 + (float(playerPosX) / 8160), 1)) + "] ", True, (0, 255, 0), (0, 0, 128))
+                nameBox = name.get_rect()
+                nameBox.center = (playerLon, playerLat - 15)
+
+                screen.blit(name, nameBox)
+
+                # == NAME == #
+
+        # pygame.draw.circle(screen, (0, 0, 255), (int(513 + (float(0) / 816)), int(506 + (float(0) / 816))), 5)
 
         pygame.display.flip()
 
@@ -169,9 +198,20 @@ def drawCanvas(rcon):
     pygame.quit()
 
 
+def isFloat(num):
+
+    try:
+
+        float(num)
+        return True
+    except Exception:
+
+        return False
+
+
 def delay():
 
-    time.sleep(1)
+    time.sleep(0.1)
 
 
 def main():
@@ -188,22 +228,6 @@ def main():
 
     drawCanvas(rcon)
 
-    endCon(rcon)
-
-
-def test():
-
-    ip = "192.168.0.196"
-    pw = "quagganland"
-    port = 32330
-
-    rcon = mcrcon.MCRcon(ip, pw, port)
-
-    startCon(rcon)
-    print(rcon.command("getplayerpos 76561198034310022"))
-    endCon(rcon)
-    startCon(rcon)
-    print(rcon.command("getplayerpos 76561198013307506"))
     endCon(rcon)
 
 
