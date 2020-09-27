@@ -4,7 +4,11 @@ Created on Sep 26, 2020
 @author: Anik
 '''
 
-import os
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+import time
+import pygame
 import mcrcon
 
 
@@ -31,7 +35,10 @@ def getPlayerList(rcon):
     playerList = []
 
     try:
+        startCon(rcon)
         resp = rcon.command("listplayers")
+        endCon(rcon)
+
         lines = resp.splitlines()
 
         for line in lines:
@@ -54,7 +61,10 @@ def getPlayerList(rcon):
 def getPlayerPos(rcon, sid):
 
     try:
+        startCon(rcon)
         resp = rcon.command("getplayerpos {}".format(sid))
+        endCon(rcon)
+
         playerPosList = resp.split()
 
         playerPosX = playerPosList[0][2:]
@@ -88,6 +98,40 @@ def updatePlayerPos(rcon, playerList):
     return playerList
 
 
+def drawCanvas():
+
+    pygame.init()
+
+    # screen = pygame.display.set_mode([1020, 1050], pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
+    screen = pygame.display.set_mode([1008, 1008])
+    tmpScreen = screen.copy()
+
+    map = pygame.image.load("img/valguero_100x100.png")
+
+    screen.fill((0, 0, 0))
+    screen.blit(map, (0, 0))
+
+    # Run until the user asks to quit
+    running = True
+    while running:
+
+        # Did the user click the window close button?
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Fill the background with white
+
+        # Draw a solid blue circle in the center
+        pygame.draw.circle(screen, (0, 0, 255), (250, 250), 75)
+
+        # Flip the display
+        pygame.display.flip()
+
+    # Done! Time to quit.
+    pygame.quit()
+
+
 def main():
 
     ip = "192.168.0.196"
@@ -96,19 +140,38 @@ def main():
 
     rcon = mcrcon.MCRcon(ip, pw, port)
 
-    startCon(rcon)
+    # startCon(rcon)
 
-    if rcon != None:
+    # if rcon != None:
+
+    drawCanvas()
+
+    while True:
 
         playerList = getPlayerList(rcon)
         onlinePlayerCount = len(playerList)
 
         playerList = updatePlayerPos(rcon, playerList)
 
-        # playerPos =
-        # resp = rcon.command("getplayerpos 76561198034310022")
         print(onlinePlayerCount, playerList)
-        endCon(rcon)
+        time.sleep(1)
+    # endCon(rcon)
+
+
+def test():
+
+    ip = "192.168.0.196"
+    pw = "quagganland"
+    port = 32330
+
+    rcon = mcrcon.MCRcon(ip, pw, port)
+
+    startCon(rcon)
+    print(rcon.command("getplayerpos 76561198034310022"))
+    endCon(rcon)
+    startCon(rcon)
+    print(rcon.command("getplayerpos 76561198013307506"))
+    endCon(rcon)
 
 
 if __name__ == '__main__':
