@@ -52,11 +52,13 @@ def getPlayerList(rcon):
 
                 info = line.split(",")
 
-                serial = info[0][0:info[0].find(".")].strip()
-                name = info[0][info[0].find(".") + 1:].strip()
-                sid = info[1].strip()
+                if len(info) == 2:
 
-                playerList.append([serial, name, sid])
+                    serial = info[0][0:info[0].find(".")].strip()
+                    name = info[0][info[0].find(".") + 1:].strip()
+                    sid = info[1].strip()
+
+                    playerList.append([serial, name, sid])
     except Exception as e:
 
         print(e)
